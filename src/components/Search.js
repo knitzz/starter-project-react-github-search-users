@@ -1,9 +1,45 @@
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
 import { MdSearch } from 'react-icons/md';
-import { GithubContext } from '../context/context';
-const Search = () => {
-  return <h2>search component</h2>;
+import {GithubContext} from '../context/context';
+const Search = ({setIsLoader}) => {
+  let [isErr,setIsErr] = useState(true);
+  let [errMsg,setErrMsg] = useState("error");
+  let {requestCount} = useContext(GithubContext);
+  let {extractUser} = useContext(GithubContext)
+  let [user,setUser] = React.useState("")
+  const handleSubmit = (e)=>{
+    e.preventDefault()
+    setIsLoader(true);
+    extractUser(user).then(()=>{
+      setIsLoader(false);
+    })
+    .catch((err)=>{
+      setIsLoader(false);
+      setIsErr(false);
+      setErrMsg("Please check if the user Exists or Try after sometime");
+      console.log("erroor yar")
+    })
+      
+  }
+  const OnInputChange = (e)=>{
+      setUser(e.target.value);
+   }
+  return (
+    <section className="section">
+      <Wrapper className="section-center">
+        <form onSubmit={handleSubmit}>
+          <div className='form-control'>
+            <MdSearch></MdSearch>
+            <input type="text" placeholder="type github user" onChange={OnInputChange}/>
+            <button type="submit" disabled={!user}>Search<span>Please type something</span></button>
+          </div>
+        </form>
+        <h3>request : {requestCount} / 60</h3>
+        <article hidden={isErr}><p>{errMsg.toString()}</p></article>
+      </Wrapper>
+    </section>
+  )
 };
 
 const Wrapper = styled.div`
@@ -38,6 +74,7 @@ const Wrapper = styled.div`
       letter-spacing: var(--spacing);
     }
     button {
+      position:relative;
       border-radius: 5px;
       border-color: transparent;
       padding: 0.25rem 0.5rem;
@@ -50,7 +87,26 @@ const Wrapper = styled.div`
       &:hover {
         background: var(--clr-primary-8);
         color: var(--clr-primary-1);
+        span{
+          display:inline-block;
+        }
       }
+      span{
+        display:none;
+        position:absolute;
+        left:-50px;
+        top:20px;
+        font-size:1rem;
+        background:black;
+        padding:5px;
+        border-radius:5px;
+      }
+    }
+    button:disabled{
+      background: grey;
+      color: var(--clr-white);
+      cursor: not-allowed;
+      
     }
 
     svg {
@@ -67,6 +123,12 @@ const Wrapper = styled.div`
       svg {
         font-size: 0.85rem;
       }
+      button{
+        span{
+          font-size:0.75rem;
+        }
+      }
+      
     }
   }
   h3 {
